@@ -148,7 +148,6 @@ package com.zhujl.uploader {
                 multiple: 'false',
                 fileName: 'Filedata',
                 //data: '{"BAIDUID":"10C34550FCCE3F9B89174192B9AAB169:FG","Hm_lvt_30a9c82538e95ab38df6f182fdcdda66":"1408287428","CNZZDATA1000523207":"365864964-1408287433-|1408287433","Hm_lvt_f4165db5a1ac36eadcfa02a10a6bd243":"1409482227","cflag":"65535:1","H_PS_PSSID":"8406_8533_8689_1449_7802_8234_6727_8679_8488_8056_8559_6504_8503_6018_8592_8625_8578_8729_7798_8167_7963_8448_8737_8436_8458"}',
-                ignoreError: 'false',
                 projectName: 'Supload'
             };
 */

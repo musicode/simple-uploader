@@ -13,7 +13,6 @@ package com.zhujl.uploader {
         private var accept: String;
         private var multiple: Boolean;
         private var fileName: String;
-        private var ignoreError: Boolean;
         private var data: Object = { };
         private var header: Object = {
             'Content-Type': 'multipart/form-data'
@@ -24,7 +23,6 @@ package com.zhujl.uploader {
             this.setAccept(options.accept);
             this.setMultiple(options.multiple);
             this.setFileName(options.fileName);
-            this.setIgnoreError(options.ignoreError);
             this.setData(options.data);
             this.setHeader(options.header);
         }
@@ -172,32 +170,5 @@ package com.zhujl.uploader {
                           : 'Filedata';
         }
 
-        /**
-         * 多文件上传时，是否忽略错误继续上传
-         *
-         * @return {Boolean}
-         */
-        public function getIgnoreError(): Boolean {
-            return this.ignoreError;
-        }
-
-        /**
-         * 多文件上传时，是否忽略错误继续上传
-         *
-         * @param {Boolean} ignoreError
-         */
-        public function setIgnoreError(ignoreError: *): void {
-            switch (typeof ignoreError) {
-                case 'boolean':
-                    this.ignoreError = ignoreError;
-                    break;
-                case 'string':
-                    this.ignoreError = ignoreError === 'true' ? true : false;
-                    break
-                default:
-                    this.ignoreError = false;
-                    break;
-            }
-        }
     }
 }
