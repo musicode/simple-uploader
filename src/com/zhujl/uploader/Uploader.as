@@ -284,6 +284,9 @@ package com.zhujl.uploader {
             }
             request.data = temp;
 
+            if (!request.url) {
+                error('缺少上传 url');
+            }
             return request;
         }
 
