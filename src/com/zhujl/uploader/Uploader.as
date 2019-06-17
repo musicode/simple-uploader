@@ -160,7 +160,6 @@ package com.zhujl.uploader {
             externalCall = new ExternalCall(projectName, movieName);
             externalCall.addCallback('enable', enable);
             externalCall.addCallback('disable', disable);
-            externalCall.addCallback('reset', reset);
             externalCall.addCallback('upload', upload);
             externalCall.addCallback('abort', abort);
             externalCall.addCallback('getFiles', getFiles);
@@ -219,13 +218,6 @@ package com.zhujl.uploader {
             button.useHandCursor = false;
             button.removeEventListener(MouseEvent.CLICK, openFileBrowser);
             info('button disabled');
-        }
-
-        /**
-         * 重置
-         */
-        public function reset(): void {
-
         }
 
         /**

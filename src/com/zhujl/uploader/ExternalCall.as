@@ -90,12 +90,13 @@ package com.zhujl.uploader {
         }
 
         public function call(name: String, data: Object = null): void {
-            var prefix: String = projectName + '.instances["' + movieName + '"].';
+            var prefix: String = projectName + '.instances.' + movieName + '.hooks.';
             ExternalInterface.call(prefix + name, data);
         }
 
         public function addCallback(name: String, fn: Function): void {
             ExternalInterface.addCallback(name, fn);
         }
+
     }
 }

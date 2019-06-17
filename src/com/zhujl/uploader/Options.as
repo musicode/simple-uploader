@@ -60,7 +60,7 @@ package com.zhujl.uploader {
             if (accept) {
                 accept = accept.split(',')
                                .map(function (ext: String, index: Number, array: Array) {
-                                   return '*.' + ext;
+								   return '*.' + ext;
                                })
                                .join(';');
             }
