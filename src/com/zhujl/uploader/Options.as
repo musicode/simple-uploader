@@ -14,17 +14,13 @@ package com.zhujl.uploader {
         private var multiple: Boolean;
         private var fileName: String;
         private var data: Object = { };
-        private var header: Object = {
+        private var headers: Object = {
             'Content-Type': 'multipart/form-data'
         };
 
         public function Options(options: Object) {
-            this.setAction(options.action);
             this.setAccept(options.accept);
             this.setMultiple(options.multiple);
-            this.setFileName(options.fileName);
-            this.setData(options.data);
-            this.setHeader(options.header);
         }
 
         /**
@@ -132,22 +128,22 @@ package com.zhujl.uploader {
          *
          * @return {Object}
          */
-        public function getHeader(): Object {
-            return this.header;
+        public function getHeaders(): Object {
+            return this.headers;
         }
 
         /**
          * 设置请求头
          *
-         * @param {String=} header
+         * @param {String=} headers
          */
-        public function setHeader(header: *): void {
+        public function setHeaders(headers: *): void {
 
-            var obj: Object = typeof header === 'string'
-                            ? JSON.decode(header)
-                            : header;
+            var obj: Object = typeof headers === 'string'
+                            ? JSON.decode(headers)
+                            : headers;
 
-            Lib.extend(this.header, obj);
+            Lib.extend(this.headers, obj);
         }
 
         /**

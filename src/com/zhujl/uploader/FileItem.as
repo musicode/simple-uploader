@@ -66,7 +66,7 @@ package com.zhujl.uploader {
          * @const
          * @type {Number}
          */
-        public static const ERROR_CANCEL: Number = 0;
+        public static const ERROR_ABORT: Number = 0;
 
         /**
          * 上传出现沙箱安全错误
@@ -138,7 +138,7 @@ package com.zhujl.uploader {
                 file.addEventListener(Event.OPEN, onUploadStart);
                 file.addEventListener(ProgressEvent.PROGRESS, onUploadProgress);
                 file.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, onUploadSuccess);
-                file.addEventListener(Event.COMPLETE, onUploadComplete);
+                file.addEventListener(Event.COMPLETE, onUploadEnd);
 
                 file.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onUploadSecurityError);
                 file.addEventListener(HTTPStatusEvent.HTTP_STATUS, onUploadHttpStatus);
@@ -155,10 +155,10 @@ package com.zhujl.uploader {
          *
          * @return {Boolean}
          */
-        public function cancel(): Boolean {
+        public function abort(): Boolean {
             if (status === FileItem.STATUS_UPLOADING) {
                 file.cancel();
-                uploadError(FileItem.ERROR_CANCEL);
+                uploadError(FileItem.ERROR_ABORT);
                 return true;
             }
             return false;
@@ -179,14 +179,6 @@ package com.zhujl.uploader {
                     name: file.name,
                     type: type.length > 0 ? type.substr(1).toLowerCase() : type,
                     size: file.size
-                },
-                nativeFile: {
-                    creationDate: file.creationDate.getTime(),
-                    creator: file.creator || '',
-                    modificationDate: file.modificationDate.getTime(),
-                    name: file.name,
-                    size: file.size,
-                    type: type
                 }
             };
         }
@@ -238,7 +230,7 @@ package com.zhujl.uploader {
         /**
          * 服务器返回 200 状态码触发
          */
-        private function onUploadComplete(e: Event): void {
+        private function onUploadEnd(e: Event): void {
             // DataEvent.UPLOAD_COMPLETE_DATA 在 Event.COMPLETE 之后触发
             dataTimer = new Timer(100, 1);
             dataTimer.addEventListener(TimerEvent.TIMER, onDataTimer);
@@ -302,8 +294,9 @@ package com.zhujl.uploader {
                     responseText: responseText
                 }
             );
-            uploadComplete();
+            uploadEnd();
         }
+
         private function uploadError(errorCode: Number, errorData: Object = null): void {
             status = FileItem.STATUS_UPLOAD_ERROR;
             dispatchFileEvent(
@@ -314,16 +307,16 @@ package com.zhujl.uploader {
                     errorData: errorData
                 }
             );
-            uploadComplete();
+            uploadEnd();
         }
 
         /**
          * 上传成功或失败之后调用
          */
-        private function uploadComplete(): void {
+        private function uploadEnd(): void {
             file.removeEventListener(Event.OPEN, onUploadStart);
             file.removeEventListener(ProgressEvent.PROGRESS, onUploadProgress);
-            file.removeEventListener(Event.COMPLETE, onUploadComplete);
+            file.removeEventListener(Event.COMPLETE, onUploadEnd);
             file.removeEventListener(DataEvent.UPLOAD_COMPLETE_DATA, onUploadSuccess);
 
             file.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onUploadSecurityError);
@@ -331,7 +324,7 @@ package com.zhujl.uploader {
             file.removeEventListener(IOErrorEvent.IO_ERROR, onUploadIOError);
 
             dispatchFileEvent(
-                FileEvent.UPLOAD_COMPLETE,
+                FileEvent.UPLOAD_END,
                 {
                     fileItem: this
                 }

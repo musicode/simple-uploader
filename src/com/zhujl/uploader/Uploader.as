@@ -6,13 +6,10 @@
  *
  *       配置项如下：
  *       {
- *           action: {string} 上传地址
  *           accept: {string=} 允许的文件类型，如 'jpg,jpg'
  *           multiple: {boolean=} 是否可多文件上传
- *           data: {Object=} 附带上传的数据
- *           fileName: {string=} 上传文件的 name 值，默认是 Filedata
- *           header: {Object=} 请求头
  *       }
+ *
  * @author zhujl
  */
 package com.zhujl.uploader {
@@ -105,6 +102,7 @@ package com.zhujl.uploader {
             enable();
 
             externalCall.ready();
+
         }
 
         /**
@@ -134,6 +132,7 @@ package com.zhujl.uploader {
             button.buttonMode = true;
 
             stage.addChild(button);
+
         }
 
         /**
@@ -141,16 +140,14 @@ package com.zhujl.uploader {
          */
         private function initOptions(): void {
             var params: Object = stage.loaderInfo.parameters;
-/**
-            var params:Object = {
-                movieName: '_Supload_178245',
-                accept: 'mp4,avi,wmv,rm,rmvb,mov,flv',
-                multiple: 'false',
-                fileName: 'Filedata',
-                //data: '{"BAIDUID":"10C34550FCCE3F9B89174192B9AAB169:FG","Hm_lvt_30a9c82538e95ab38df6f182fdcdda66":"1408287428","CNZZDATA1000523207":"365864964-1408287433-|1408287433","Hm_lvt_f4165db5a1ac36eadcfa02a10a6bd243":"1409482227","cflag":"65535:1","H_PS_PSSID":"8406_8533_8689_1449_7802_8234_6727_8679_8488_8056_8559_6504_8503_6018_8592_8625_8578_8729_7798_8167_7963_8448_8737_8436_8458"}',
-                projectName: 'Supload'
-            };
-*/
+
+            // var params:Object = {
+            //     projectName: 'Supload',
+            //     movieName: '_Supload_178245',
+            //     accept: 'mp4,avi,wmv,rm,rmvb,mov,flv',
+            //     multiple: 'false'
+            // };
+
             this.projectName = params.projectName;
             this.movieName = params.movieName;
             this.options = new Options(params);
@@ -165,11 +162,13 @@ package com.zhujl.uploader {
             externalCall.addCallback('disable', disable);
             externalCall.addCallback('reset', reset);
             externalCall.addCallback('upload', upload);
-            externalCall.addCallback('cancel', cancel);
+            externalCall.addCallback('abort', abort);
             externalCall.addCallback('getFiles', getFiles);
+            externalCall.addCallback('setHeaders', setHeaders);
+            externalCall.addCallback('setFileName', setFileName);
             externalCall.addCallback('setAction', setAction);
             externalCall.addCallback('setData', setData);
-            externalCall.addCallback('dispose', dispose);
+            externalCall.addCallback('destroy', destroy);
         }
 
         /**
@@ -249,7 +248,7 @@ package com.zhujl.uploader {
          */
         public function setAction(action: String): void {
             options.setAction(action);
-            info('setAction: ' + action);
+            info('setAction');
         }
 
         /**
@@ -259,33 +258,55 @@ package com.zhujl.uploader {
          */
         public function setData(data: Object): void {
             options.setData(data);
+            info('setData');
+        }
+
+        /**
+         * 设置请求头
+         *
+         * @param {Object} headers
+         */
+        public function setHeaders(headers: Object): void {
+            options.setHeaders(headers);
+            info('setHeaders');
+        }
+
+        /**
+         * 设置上传文件名
+         *
+         * @param {Object} fileName
+         */
+        public function setFileName(fileName: String): void {
+            options.setFileName(fileName);
+            info('setFileName');
         }
 
         private function getRequest(): URLRequest {
+
             var request: URLRequest = new URLRequest(options.getAction());
             request.method = URLRequestMethod.POST;
 
-            var header: Object = options.getHeader();
-            if (header) {
-                var headers: Array = [];
-                for (var key: String in header) {
-                    headers.push(
-                        new URLRequestHeader(key, header[key])
+            var headers: Object = options.getHeaders();
+            if (headers) {
+                var requestHeaders: Array = [];
+                for (var name: String in headers) {
+                    requestHeaders.push(
+                        new URLRequestHeader(name, headers[name])
                     );
                 }
-                request.requestHeaders = headers;
+                request.requestHeaders = requestHeaders;
             }
 
             var data: Object = options.getData();
 
-            var temp: URLVariables = new URLVariables();
+            var variables: URLVariables = new URLVariables();
             for (var key: String in data) {
-                temp[key] = data[key];
+                variables[key] = data[key];
             }
-            request.data = temp;
+            request.data = variables;
 
             if (!request.url) {
-                error('缺少上传 url');
+                error('Action is required.');
             }
             return request;
         }
@@ -306,7 +327,7 @@ package com.zhujl.uploader {
                     fileItem.addEventListener(FileEvent.UPLOAD_PROGRESS, onUploadProgress);
                     fileItem.addEventListener(FileEvent.UPLOAD_SUCCESS, onUploadSuccess);
                     fileItem.addEventListener(FileEvent.UPLOAD_ERROR, onUploadError);
-                    fileItem.addEventListener(FileEvent.UPLOAD_COMPLETE, onUploadComplete);
+                    fileItem.addEventListener(FileEvent.UPLOAD_END, onUploadEnd);
                 }
             }
         }
@@ -314,26 +335,26 @@ package com.zhujl.uploader {
         /**
          * 中止上传
          */
-        public function cancel(index: uint): void {
+        public function abort(index: uint): void {
             var fileItem: FileItem = queue.getFiles()[index];
             if (fileItem) {
-                fileItem.cancel();
+                fileItem.abort();
             }
         }
 
         /**
          * 销毁对象
          */
-        public function dispose(): void {
+        public function destroy(): void {
 
             queue.getFiles().forEach(
                 function (fileItem: FileItem) {
-                    fileItem.cancel();
+                    fileItem.abort();
                 }
             );
 
             disable();
-            info('dispose');
+            info('destroy');
         }
 
         public function catchError(): void {
@@ -359,18 +380,18 @@ package com.zhujl.uploader {
          */
         private function onFileChange(e: Event): void {
 
-            info('file change');
-
             if (singleFile) {
                 singleFile.removeEventListener(Event.SELECT, onFileChange);
                 singleFile.removeEventListener(Event.CANCEL, onFileChange);
 
                 if (e.type === Event.SELECT) {
-
                     queue.setFiles([ singleFile ]);
                     externalCall.fileChange();
 
-                    info('fileName: ' + singleFile.name);
+                    info('select file: ' + singleFile.name);
+                }
+                else {
+                  info('cancel file');
                 }
 
                 singleFile = null;
@@ -380,54 +401,48 @@ package com.zhujl.uploader {
                 multipleFiles.removeEventListener(Event.CANCEL, onFileChange);
 
                 if (e.type === Event.SELECT) {
-
                     queue.setFiles(multipleFiles.fileList);
                     externalCall.fileChange();
 
-                    info('file count: ' + multipleFiles.fileList.length);
+                    info('select file count: ' + multipleFiles.fileList.length);
+                }
+                else {
+                  info('cancel file');
                 }
 
                 multipleFiles = null;
             }
 
-
             enable();
-
-
-            //setAction('http://220.181.153.135/api/fileupload?offset=0&token=eVp-rEs45SrJ6ekzKFfVt4wWokI5AIfWVaCvcVNN0TdSZlMMOyFxW5QFbK2TCO1mKJeb05MpFJfAEyf1kUNq4_YLmQFvLDmO895LDBAZhRSAZxpW52jV1I3pGOQFC2qGU0XW2R3S9XCcRY463hEsijEjMgxNjDJNd9YTBGjgg_50w0lTi3kKy7vFeVCIRJGKrR9cfcMpJBplV4EfXIWUD-TlOataKrKtLXLsL5R0qQqXdkkuuarAgKH0gLUKwQHpPcwAZXJ_GUjjxc9iQpJjxuA4jojP6hd-tpuLWolmfa-Jrx_OziVY3ACCO2hTeP48T5zosgiALbKR3hAmA6oZo5YAh9Htaim6-0T-bjdJYCP5mMKxO-L96bl3Hq0wGJKE1YlrybLdLKyLxB291lS0HnI6DATaKQtOzWkTOCISF1bol8JvTpr6zxRowUyMEm9rzDaeIGZIKk_AMQe-vDG7fnBDQT7Up5dxlCcYTOoGCa4u_4NgmCIR0TSeWEHUSNIE2SvjCYGT57_5UokM_1fhPccCEtGRY8z3tY2CmK4LVt_lXauYAAc7hUG1QG47Y024Q9nW60pPQFBVwjlnpuXrlpbtMsyyUmMNeSQP4Urzsgw94J4ls25IzPh6ptw~&fmt=cjson');
-
-            // setAction('http://192.168.16.15:9000/cfuupload');
-            // upload(1);
-
 
         }
         private function onUploadStart(e: FileEvent): void {
-            info('uploadStart: ' + e.data.fileItem.file.name);
+            info('upload start: ' + e.data.fileItem.file.name);
             externalCall.uploadStart(e.data.fileItem);
         }
         private function onUploadProgress(e: FileEvent): void {
-            info('uploadProgress: ' + e.data.loaded + '/' + e.data.total);
+            info('upload progress: ' + e.data.loaded + '/' + e.data.total);
             externalCall.uploadProgress(e.data.fileItem, e.data.loaded, e.data.total);
         }
         private function onUploadSuccess(e: FileEvent): void {
-            info('uploadSuccess: ' + e.data.responseText);
+            info('upload success: ' + e.data.responseText);
             externalCall.uploadSuccess(e.data.fileItem, e.data.responseText);
         }
         private function onUploadError(e: FileEvent): void {
-            info('uploadError: ' + e.data.errorCode);
+            info('upload error: ' + e.data.errorCode);
             externalCall.uploadError(e.data.fileItem, e.data.errorCode, e.data.errorData);
         }
-        private function onUploadComplete(e: FileEvent): void {
+        private function onUploadEnd(e: FileEvent): void {
 
             var target: FileItem = e.target as FileItem;
             target.removeEventListener(FileEvent.UPLOAD_START, onUploadStart);
             target.removeEventListener(FileEvent.UPLOAD_PROGRESS, onUploadProgress);
             target.removeEventListener(FileEvent.UPLOAD_SUCCESS, onUploadSuccess);
             target.removeEventListener(FileEvent.UPLOAD_ERROR, onUploadError);
-            target.removeEventListener(FileEvent.UPLOAD_COMPLETE, onUploadComplete);
+            target.removeEventListener(FileEvent.UPLOAD_END, onUploadEnd);
 
-            info('uploadComplete: ' + e.data.fileItem.file.name);
-            externalCall.uploadComplete(e.data.fileItem);
+            info('upload end: ' + e.data.fileItem.file.name);
+            externalCall.uploadEnd(e.data.fileItem);
         }
     }
 }

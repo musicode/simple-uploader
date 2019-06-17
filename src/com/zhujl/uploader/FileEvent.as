@@ -55,7 +55,7 @@ package com.zhujl.uploader {
          * @const
          * @type {String}
          */
-        public static const UPLOAD_COMPLETE: String = 'uploadComplete';
+        public static const UPLOAD_END: String = 'uploadEnd';
 
         /**
          * 用于事件广播时传递数据

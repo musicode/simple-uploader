@@ -31,7 +31,7 @@ package com.zhujl.uploader {
 
         public function uploadStart(fileItem: FileItem): void {
             call(
-                'onUploadStart',
+                'onStart',
                 {
                     fileItem: fileItem.toJsObject()
                 }
@@ -40,7 +40,7 @@ package com.zhujl.uploader {
 
         public function uploadProgress(fileItem: FileItem, loaded: Number, total: Number): void {
             call(
-                'onUploadProgress',
+                'onProgress',
                 {
                     fileItem: fileItem.toJsObject(),
                     uploaded: loaded,
@@ -51,7 +51,7 @@ package com.zhujl.uploader {
 
         public function uploadSuccess(fileItem: FileItem, responseText: String): void {
             call(
-                'onUploadSuccess',
+                'onSuccess',
                 {
                     fileItem: fileItem.toJsObject(),
                     responseText: responseText
@@ -61,7 +61,7 @@ package com.zhujl.uploader {
 
         public function uploadError(fileItem: FileItem, errorCode: Number, errorData: Object = null): void {
             call(
-                'onUploadError',
+                'onError',
                 {
                     fileItem: fileItem.toJsObject(),
                     errorCode: errorCode,
@@ -71,9 +71,9 @@ package com.zhujl.uploader {
         }
 
 
-        public function uploadComplete(fileItem: FileItem): void {
+        public function uploadEnd(fileItem: FileItem): void {
             call(
-                'onUploadComplete',
+                'onEnd',
                 {
                     fileItem: fileItem.toJsObject()
                 }
@@ -82,12 +82,11 @@ package com.zhujl.uploader {
 
         public function log(text: String): void {
             call(
-                'onLog',
+                'onDebug',
                 {
                     text: text
                 }
             );
-            trace(text);
         }
 
         public function call(name: String, data: Object = null): void {
