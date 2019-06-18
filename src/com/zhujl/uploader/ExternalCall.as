@@ -33,7 +33,7 @@ package com.zhujl.uploader {
             call(
                 'onStart',
                 {
-                    fileItem: fileItem.toJsObject()
+                    file: fileItem.toJsObject()
                 }
             );
         }
@@ -42,7 +42,7 @@ package com.zhujl.uploader {
             call(
                 'onProgress',
                 {
-                    fileItem: fileItem.toJsObject(),
+                    file: fileItem.toJsObject(),
                     uploaded: loaded,
                     total: total
                 }
@@ -53,7 +53,7 @@ package com.zhujl.uploader {
             call(
                 'onSuccess',
                 {
-                    fileItem: fileItem.toJsObject(),
+                    file: fileItem.toJsObject(),
                     responseText: responseText
                 }
             );
@@ -63,9 +63,9 @@ package com.zhujl.uploader {
             call(
                 'onError',
                 {
-                    fileItem: fileItem.toJsObject(),
-                    errorCode: errorCode,
-                    errorData: errorData
+                    file: fileItem.toJsObject(),
+                    code: errorCode,
+                    detail: errorData
                 }
             );
         }
@@ -75,7 +75,7 @@ package com.zhujl.uploader {
             call(
                 'onEnd',
                 {
-                    fileItem: fileItem.toJsObject()
+                    file: fileItem.toJsObject()
                 }
             );
         }
@@ -90,7 +90,7 @@ package com.zhujl.uploader {
         }
 
         public function call(name: String, data: Object = null): void {
-            var prefix: String = projectName + '.instances.' + movieName + '.hooks.';
+            var prefix: String = projectName + '.instances.' + movieName + '.';
             ExternalInterface.call(prefix + name, data);
         }
 

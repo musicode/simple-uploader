@@ -175,11 +175,9 @@ package com.zhujl.uploader {
             return {
                 index: index,
                 status: status,
-                file: {
-                    name: file.name,
-                    type: type.length > 0 ? type.substr(1).toLowerCase() : type,
-                    size: file.size
-                }
+                name: file.name,
+                type: type.length > 0 ? type.substr(1).toLowerCase() : type,
+                size: file.size
             };
         }
 
