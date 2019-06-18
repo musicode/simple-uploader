@@ -42,6 +42,14 @@ package com.zhujl.uploader {
         public static const UPLOAD_SUCCESS: String = 'uploadSuccess';
 
         /**
+         * 文件上传中断事件
+         *
+         * @const
+         * @type {String}
+         */
+        public static const UPLOAD_ABORT: String = 'uploadAbort';
+
+        /**
          * 文件上传失败事件
          *
          * @const

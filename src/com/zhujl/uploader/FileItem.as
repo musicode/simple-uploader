@@ -61,12 +61,12 @@ package com.zhujl.uploader {
         public static const STATUS_UPLOAD_ERROR: Number = 3;
 
         /**
-         * 上传中止错误
+         * 上传中止状态
          *
          * @const
          * @type {Number}
          */
-        public static const ERROR_ABORT: Number = 0;
+        public static const STATUS_UPLOAD_ABORT: Number = 4;
 
         /**
          * 上传出现沙箱安全错误
@@ -74,7 +74,7 @@ package com.zhujl.uploader {
          * @const
          * @type {Number}
          */
-        public static const ERROR_SECURITY: Number = 1;
+        public static const ERROR_SECURITY: Number = 0;
 
         /**
          * 上传 IO 错误
@@ -82,7 +82,7 @@ package com.zhujl.uploader {
          * @const
          * @type {Number}
          */
-        public static const ERROR_IO: Number = 2;
+        public static const ERROR_IO: Number = 1;
 
         /**
          * 文件在队列中的索引
@@ -104,6 +104,13 @@ package com.zhujl.uploader {
          * @type {FileReference}
          */
         public var file: FileReference;
+
+        /**
+         * 是否调用过 uploadStart
+         *
+         * @type {Boolean}
+         */
+        private var isStarted: Boolean;
 
         /**
          * 用于临时存储 http 错误状态码
@@ -158,7 +165,16 @@ package com.zhujl.uploader {
         public function abort(): Boolean {
             if (status === FileItem.STATUS_UPLOADING) {
                 file.cancel();
-                uploadError(FileItem.ERROR_ABORT);
+
+                status = FileItem.STATUS_UPLOAD_ABORT;
+                dispatchFileEvent(
+                    FileEvent.UPLOAD_ABORT,
+                    {
+                        fileItem: this
+                    }
+                );
+                uploadEnd();
+
                 return true;
             }
             return false;
@@ -202,6 +218,7 @@ package com.zhujl.uploader {
          */
         private function onUploadStart(e: Event): void {
             status = FileItem.STATUS_UPLOADING;
+            isStarted = true;
 
             dispatchFileEvent(
                 FileEvent.UPLOAD_START,
@@ -321,12 +338,16 @@ package com.zhujl.uploader {
             file.removeEventListener(HTTPStatusEvent.HTTP_STATUS, onUploadHttpStatus);
             file.removeEventListener(IOErrorEvent.IO_ERROR, onUploadIOError);
 
-            dispatchFileEvent(
-                FileEvent.UPLOAD_END,
-                {
-                    fileItem: this
-                }
-            );
+            if (isStarted) {
+                isStarted = false
+                dispatchFileEvent(
+                    FileEvent.UPLOAD_END,
+                    {
+                        fileItem: this
+                    }
+                );
+            }
+
         }
 
         /**

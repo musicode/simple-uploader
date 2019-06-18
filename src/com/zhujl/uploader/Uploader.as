@@ -274,6 +274,7 @@ package com.zhujl.uploader {
                     fileItem.addEventListener(FileEvent.UPLOAD_PROGRESS, onUploadProgress);
                     fileItem.addEventListener(FileEvent.UPLOAD_SUCCESS, onUploadSuccess);
                     fileItem.addEventListener(FileEvent.UPLOAD_ERROR, onUploadError);
+                    fileItem.addEventListener(FileEvent.UPLOAD_ABORT, onUploadAbort);
                     fileItem.addEventListener(FileEvent.UPLOAD_END, onUploadEnd);
                 }
             }
@@ -364,20 +365,24 @@ package com.zhujl.uploader {
 
         }
         private function onUploadStart(e: FileEvent): void {
-            info('upload start: ' + e.data.fileItem.file.name);
+            info('upload start: ' + e.data.fileItem.index);
             externalCall.uploadStart(e.data.fileItem);
         }
         private function onUploadProgress(e: FileEvent): void {
-            info('upload progress: ' + e.data.loaded + '/' + e.data.total);
+            info('upload progress: ' + e.data.fileItem.index + ' ' + e.data.loaded + '/' + e.data.total);
             externalCall.uploadProgress(e.data.fileItem, e.data.loaded, e.data.total);
         }
         private function onUploadSuccess(e: FileEvent): void {
-            info('upload success: ' + e.data.responseText);
+            info('upload success: ' + e.data.fileItem.index + ' ' + e.data.responseText);
             externalCall.uploadSuccess(e.data.fileItem, e.data.responseText);
         }
         private function onUploadError(e: FileEvent): void {
-            info('upload error: ' + e.data.errorCode);
+            info('upload error: ' + e.data.fileItem.index + ' ' + e.data.errorCode);
             externalCall.uploadError(e.data.fileItem, e.data.errorCode, e.data.errorData);
+        }
+        private function onUploadAbort(e: FileEvent): void {
+            info('upload abort: ' + e.data.fileItem.index);
+            externalCall.uploadAbort(e.data.fileItem);
         }
         private function onUploadEnd(e: FileEvent): void {
 
@@ -386,9 +391,10 @@ package com.zhujl.uploader {
             target.removeEventListener(FileEvent.UPLOAD_PROGRESS, onUploadProgress);
             target.removeEventListener(FileEvent.UPLOAD_SUCCESS, onUploadSuccess);
             target.removeEventListener(FileEvent.UPLOAD_ERROR, onUploadError);
+            target.removeEventListener(FileEvent.UPLOAD_ABORT, onUploadAbort);
             target.removeEventListener(FileEvent.UPLOAD_END, onUploadEnd);
 
-            info('upload end: ' + e.data.fileItem.file.name);
+            info('upload end: ' + e.data.fileItem.index);
             externalCall.uploadEnd(e.data.fileItem);
         }
     }

@@ -70,6 +70,14 @@ package com.zhujl.uploader {
             );
         }
 
+        public function uploadAbort(fileItem: FileItem): void {
+            call(
+                'onAbort',
+                {
+                    file: fileItem.toJsObject()
+                }
+            );
+        }
 
         public function uploadEnd(fileItem: FileItem): void {
             call(
