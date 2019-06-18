@@ -143,9 +143,10 @@ package com.zhujl.uploader {
         public function upload(request: URLRequest, fileName: String): Boolean {
             if (status === FileItem.STATUS_WAITING) {
                 file.addEventListener(Event.OPEN, onUploadStart);
+                file.addEventListener(Event.CANCEL, onUploadAbort);
+                file.addEventListener(Event.COMPLETE, onUploadEnd);
                 file.addEventListener(ProgressEvent.PROGRESS, onUploadProgress);
                 file.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, onUploadSuccess);
-                file.addEventListener(Event.COMPLETE, onUploadEnd);
 
                 file.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onUploadSecurityError);
                 file.addEventListener(HTTPStatusEvent.HTTP_STATUS, onUploadHttpStatus);
@@ -165,16 +166,6 @@ package com.zhujl.uploader {
         public function abort(): Boolean {
             if (status === FileItem.STATUS_UPLOADING) {
                 file.cancel();
-
-                status = FileItem.STATUS_UPLOAD_ABORT;
-                dispatchFileEvent(
-                    FileEvent.UPLOAD_ABORT,
-                    {
-                        fileItem: this
-                    }
-                );
-                uploadEnd();
-
                 return true;
             }
             return false;
@@ -226,6 +217,17 @@ package com.zhujl.uploader {
                     fileItem: this
                 }
             );
+        }
+
+        private function onUploadAbort(e: Event): void {
+            status = FileItem.STATUS_UPLOAD_ABORT;
+            dispatchFileEvent(
+                FileEvent.UPLOAD_ABORT,
+                {
+                    fileItem: this
+                }
+            );
+            uploadEnd();
         }
 
         /**
@@ -330,8 +332,9 @@ package com.zhujl.uploader {
          */
         private function uploadEnd(): void {
             file.removeEventListener(Event.OPEN, onUploadStart);
-            file.removeEventListener(ProgressEvent.PROGRESS, onUploadProgress);
+            file.removeEventListener(Event.CANCEL, onUploadAbort);
             file.removeEventListener(Event.COMPLETE, onUploadEnd);
+            file.removeEventListener(ProgressEvent.PROGRESS, onUploadProgress);
             file.removeEventListener(DataEvent.UPLOAD_COMPLETE_DATA, onUploadSuccess);
 
             file.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onUploadSecurityError);
