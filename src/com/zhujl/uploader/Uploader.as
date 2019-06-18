@@ -32,6 +32,8 @@ package com.zhujl.uploader {
 
     import flash.system.Security;
 
+    import com.zhujl.utils.Lib;
+
     public class Uploader extends Sprite {
 
         /**
@@ -163,10 +165,6 @@ package com.zhujl.uploader {
             externalCall.addCallback('upload', upload);
             externalCall.addCallback('abort', abort);
             externalCall.addCallback('getFiles', getFiles);
-            externalCall.addCallback('setHeaders', setHeaders);
-            externalCall.addCallback('setFileName', setFileName);
-            externalCall.addCallback('setAction', setAction);
-            externalCall.addCallback('setData', setData);
             externalCall.addCallback('destroy', destroy);
         }
 
@@ -233,88 +231,45 @@ package com.zhujl.uploader {
             );
         }
 
-        /**
-         * 设置上传地址
-         *
-         * @param {String} action
-         */
-        public function setAction(action: String): void {
-            options.setAction(action);
-            info('setAction');
-        }
+        private function getRequest(action: String, data: Object, headers: Object): URLRequest {
 
-        /**
-         * 设置上传数据
-         *
-         * @param {Object} data 附带一起上传的数据
-         */
-        public function setData(data: Object): void {
-            options.setData(data);
-            info('setData');
-        }
-
-        /**
-         * 设置请求头
-         *
-         * @param {Object} headers
-         */
-        public function setHeaders(headers: Object): void {
-            options.setHeaders(headers);
-            info('setHeaders');
-        }
-
-        /**
-         * 设置上传文件名
-         *
-         * @param {Object} fileName
-         */
-        public function setFileName(fileName: String): void {
-            options.setFileName(fileName);
-            info('setFileName');
-        }
-
-        private function getRequest(): URLRequest {
-
-            var request: URLRequest = new URLRequest(options.getAction());
+            var request: URLRequest = new URLRequest(action);
             request.method = URLRequestMethod.POST;
 
-            var headers: Object = options.getHeaders();
-            if (headers) {
-                var requestHeaders: Array = [];
-                for (var name: String in headers) {
-                    requestHeaders.push(
-                        new URLRequestHeader(name, headers[name])
-                    );
+            if (data) {
+                var variables: URLVariables = new URLVariables();
+                for (var key: String in data) {
+                    variables[key] = data[key];
                 }
-                request.requestHeaders = requestHeaders;
+                request.data = variables;
             }
 
-            var data: Object = options.getData();
-
-            var variables: URLVariables = new URLVariables();
-            for (var key: String in data) {
-                variables[key] = data[key];
+            var allHeaders = {
+                'Content-Type': 'multipart/form-data'
             }
-            request.data = variables;
-
-            if (!request.url) {
-                error('Action is required.');
+            if (headers) {
+                Lib.extend(allHeaders, headers)
             }
+
+            var requestHeaders: Array = [];
+            for (var name: String in allHeaders) {
+                requestHeaders.push(
+                    new URLRequestHeader(name, allHeaders[name])
+                );
+            }
+            request.requestHeaders = requestHeaders;
+
             return request;
+
         }
 
         /**
          * 开始上传
          */
-        public function upload(index: uint): void {
+        public function upload(index: uint, action: String, fileName: String, data: Object, headers: Object): void {
             var fileItem: FileItem = queue.getFiles()[index];
             if (fileItem) {
-                if (
-                    fileItem.upload(
-                        getRequest(),
-                        options.getFileName()
-                    )
-                ) {
+                if (fileItem.upload(getRequest(action, data, headers), fileName)) {
                     fileItem.addEventListener(FileEvent.UPLOAD_START, onUploadStart);
                     fileItem.addEventListener(FileEvent.UPLOAD_PROGRESS, onUploadProgress);
                     fileItem.addEventListener(FileEvent.UPLOAD_SUCCESS, onUploadSuccess);
